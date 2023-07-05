@@ -1,4 +1,5 @@
-import stilos from "../Home/home.module.css"
+import stilos from "./home.module.css"
+
 
 const Home = ()=>{
     return (
