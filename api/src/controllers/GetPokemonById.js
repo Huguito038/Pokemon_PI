@@ -1,19 +1,11 @@
 const axios = require("axios")
-const {Pokemon,Types} = require("../db")
+const {Pokemon,Type} = require("../db")
 
 const GetPokemonById = async(req,res)=>{
     const {id} = req.params;
     try{
-        const pokemonInDb = await Pokemon.findByPk(id, { //Buscar Pokemon En la DB 
-            include: {
-              model: Types,
-              attributes: ['name'],
-              through: { attributes: [] },
-            },
-          })
-        if(!pokemonInDb){ // Si no existen pokemons en la BD pasa a hacer peticion a la API
-            let {data} = await axios.get(`https://pokeapi.co/api/v2/pokemon/${id}`)
-            const poke = {
+        let {data} = await axios.get(`https://pokeapi.co/api/v2/pokemon/${id}`)
+        const poke = {
                 id: data.id,
                 name: (data.name).charAt(0).toUpperCase() + (data.name).slice(1),
                 image: data.sprites.versions["generation-v"]['black-white'].animated.front_default,
@@ -25,9 +17,16 @@ const GetPokemonById = async(req,res)=>{
                 weight: data.weight,
                 types: data.types.map( type => type.type.name)
             }
-            return res.status(201).json(poke)// Devuelve el pokemon de la peticion a la API
-        }
-        const pokemonWithTypes = {  //Busca el pokemon en la BD con su propiedad Types mapeada y retornada
+        if(data){return res.status(201).json(poke)}// Devuelve el pokemon de la peticion a la API
+
+        const pokemonInDb = await Pokemon.findByPk(id, { //Buscar Pokemon En la DB 
+            include: {
+              model: Type,
+              attributes: ['name'],
+              through: { attributes: [] },
+            },
+          })
+          const pokemonWithTypes = {  //Busca el pokemon en la BD con su propiedad Types mapeada y retornada
             id: pokemonInDb.id,
             name: pokemonInDb.name,
             image: pokemonInDb.image,
@@ -35,14 +34,18 @@ const GetPokemonById = async(req,res)=>{
             attack: pokemonInDb.attack,
             defense: pokemonInDb.defense,
             speed: pokemonInDb.speed,
-            types: pokemonInDb.Types.map((type) => type.name),
             height: pokemonInDb.height,
-            weight: pokemonInDb.weight,}
+            weight: pokemonInDb.weight,
+            types: pokemonInDb.type.map((type) => type),}
 
-         return res.status(200).json(pokemonWithTypes) //Devuelve el pokemon de la Base de Datos
+         if(pokemonInDb){return res.status(200).json(pokemonWithTypes)}
+         
+         return res.send("No existe pokemon con ese ID...")
+
+        }catch(error){res.status(401).send(error.message)}//Return del error
+        
     }
-    catch(error){res.status(401).send(error.message)}//Return del error
-}
+    
 
 
 module.exports = GetPokemonById

@@ -17,6 +17,9 @@ module.exports = (sequelize) => {
     defense:{type: DataTypes.INTEGER,
       allowNull:false
     },
+    speed:{type: DataTypes.INTEGER,
+      allowNull:false
+    },
     height:{type: DataTypes.INTEGER,
         allowNull:true
     },
@@ -29,11 +32,11 @@ module.exports = (sequelize) => {
     image:{type: DataTypes.STRING,
       allowNull:false
     },
-    typess: {type: DataTypes.JSON,
+    type: {type: DataTypes.JSON,
       allowNull: false
     },
-    velocity:{type: DataTypes.INTEGER,
-      allowNull:true
+    createdOnDB:{type: DataTypes.BOOLEAN,
+      defaultValue:false
     },
   },{createdAt:false,updatedAt:false});
 };
